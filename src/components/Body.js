@@ -221,11 +221,11 @@ const Body = (props) => {
           value={encryptedData}
           readOnly
           rows="4"
-          cols="100"
           style={{
             backgroundColor: props.mode === "dark" ? "rgb(211,211,211)" : "white",
             color: props.mode === "dark" ? "black" : "black",
             border: "1px solid black",
+            marginRight:"10%",
           }}
           
         ></textarea>
