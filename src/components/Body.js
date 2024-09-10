@@ -156,6 +156,7 @@ const Body = (props) => {
             backgroundColor: props.mode === "dark" ? "rgb(211,211,211)" : "white",
             color: props.mode === "dark" ? "black" : "black",
             border: "1px solid black",
+            width:"80%",
           }}
           rows="5"
           cols="100"
@@ -225,7 +226,7 @@ const Body = (props) => {
             backgroundColor: props.mode === "dark" ? "rgb(211,211,211)" : "white",
             color: props.mode === "dark" ? "black" : "black",
             border: "1px solid black",
-            marginRight:"10%",
+            width:"80%"
           }}
           
         ></textarea>
