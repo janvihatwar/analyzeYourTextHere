@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/janvihatwar/analyzeYourTextHere/static/css/main.e6c13ad2.css",
+    "main.js": "/janvihatwar/analyzeYourTextHere/static/js/main.cfec3ca2.js",
+    "static/js/453.9896242d.chunk.js": "/janvihatwar/analyzeYourTextHere/static/js/453.9896242d.chunk.js",
+    "index.html": "/janvihatwar/analyzeYourTextHere/index.html",
+    "main.e6c13ad2.css.map": "/janvihatwar/analyzeYourTextHere/static/css/main.e6c13ad2.css.map",
+    "main.cfec3ca2.js.map": "/janvihatwar/analyzeYourTextHere/static/js/main.cfec3ca2.js.map",
+    "453.9896242d.chunk.js.map": "/janvihatwar/analyzeYourTextHere/static/js/453.9896242d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.cfec3ca2.js"
+  ]
+}
