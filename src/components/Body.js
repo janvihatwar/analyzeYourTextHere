@@ -273,7 +273,7 @@ const Body = (props) => {
         </p>
         <p>{text.split(".").length - 1} Number of Sentences</p>
         <h4>Preview Text</h4>
-        <p>{text.length > 0 ? text : "Nothing to preview "}</p>
+        <p>{text.length > 0 ? text : "Nothing to preview here"}</p>
       </div>
     </>
   );
