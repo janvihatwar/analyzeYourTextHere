@@ -3,7 +3,7 @@ import Body from './components/Body';
 import Navbar from './components/Navbar';
 import Alert from './components/Alert'
 import React,{useState} from 'react';
-
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 
 function App() {
   const[mode,setMode]=useState('light');
@@ -36,16 +36,11 @@ function App() {
 
   }
   return (
-    <>
-
-   <Navbar title="Text Analyzer" mode={mode} toggleMode={toggleMode}/>  {/*we are given title here bcz we can update title anytime  */}
-   <Alert alert={alert}/>
-   
-   <div className="container">
-   <Body showAlert={showAlert} mode={mode} toggleMode={toggleMode}  />
-   </div>
-  
-  </>
+    <Router>
+      <Routes>
+        {/* Your routes here */}
+      </Routes>
+    </Router>
   );
 }
 
