@@ -2,25 +2,21 @@ import React, { useState } from "react";
 
 const Body = (props) => {
   const [text, setText] = useState("");
-  const [encryptedData, setEncryptedData] = useState("");
-  const [decryptedMessage, setDecryptedMessage] = useState("");
-  const [encryptionKey, setEncryptionKey] = useState(null);
 
   const upCase = () => {
-    let newText1 = text.toUpperCase();
-    setText(newText1);
+    let newText = text.toUpperCase();
+    setText(newText);
     props.showAlert("Converted to UpperCase!!", "success");
   };
 
   const lwCase = () => {
-    let newText2 = text.toLowerCase();
-    setText(newText2);
+    let newText = text.toLowerCase();
+    setText(newText);
     props.showAlert("Converted to LowerCase!!", "success");
   };
 
   const clearText = () => {
-    let newText3 = "";
-    setText(newText3);
+    setText("");
     props.showAlert("Text Cleared!!", "success");
   };
 
@@ -30,8 +26,8 @@ const Body = (props) => {
   };
 
   const extraSpace = () => {
-    let newText4 = text.split(/[ ]+/).join(" ");
-    setText(newText4);
+    let newText = text.split(/[ ]+/).join(" ");
+    setText(newText);
     props.showAlert("Extra Space removed!!", "success");
   };
 
@@ -39,105 +35,22 @@ const Body = (props) => {
     setText(event.target.value);
   };
 
-  // Encryption functions
-  const encrypt = async () => {
-    if (!text) {
-      alert("Please enter a message.");
-      return;
-    }
-
-    // Auto-generate encryption key if it hasn't been created yet
-    const key = encryptionKey || (await generateKey());
-    setEncryptionKey(key);
-
-    const encrypted = await encryptMessage(text, key);
-    setEncryptedData(JSON.stringify(encrypted));
-    setDecryptedMessage(""); // Clear decrypted message field
-
-    props.showAlert("Text Encrypted!!", "success");
+  // Base64 Encoding
+  const encodeBase64 = () => {
+    const encoded = btoa(text);
+    setText(encoded);
+    props.showAlert("Text Encoded to Base64!", "success");
   };
 
-  const decrypt = async () => {
-    if (!encryptedData) {
-      alert("Please encrypt a message first.");
-      return;
-    }
-
-    if (!encryptionKey) {
-      alert("No encryption key found. Please encrypt a message first.");
-      return;
-    }
-
+  // Base64 Decoding
+  const decodeBase64 = () => {
     try {
-      const encrypted = JSON.parse(encryptedData);
-      const decrypted = await decryptMessage(encrypted, encryptionKey);
-      setDecryptedMessage(decrypted);
-    } catch (error) {
-      alert("Decryption failed. Ensure that the data is correctly formatted.");
-      console.error("Decryption error:", error);
+      const decoded = atob(text);
+      setText(decoded);
+      props.showAlert("Text Decoded from Base64!", "success");
+    } catch (e) {
+      props.showAlert("Invalid Base64 string!", "danger");
     }
-
-    props.showAlert("Text Decrypted!!", "success");
-
-  };
-
-  // Function to auto-generate an encryption key
-  const generateKey = async () => {
-    return window.crypto.subtle.generateKey(
-      {
-        name: "AES-GCM",
-        length: 256,
-      },
-      true,
-      ["encrypt", "decrypt"]
-    );
-  };
-
-  // Encrypt the message
-  const encryptMessage = async (message, key) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Generate random IV
-    const encrypted = await window.crypto.subtle.encrypt(
-      {
-        name: "AES-GCM",
-        iv: iv,
-      },
-      key,
-      data
-    );
-
-    // Convert encrypted data and IV to Base64
-    return {
-      iv: btoa(String.fromCharCode(...iv)),
-      encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-    };
-  };
-
-  // Decrypt the message
-  const decryptMessage = async (encryptedData, key) => {
-    const iv = new Uint8Array(
-      atob(encryptedData.iv)
-        .split("")
-        .map((c) => c.charCodeAt(0))
-    );
-    const encrypted = new Uint8Array(
-      atob(encryptedData.encrypted)
-        .split("")
-        .map((c) => c.charCodeAt(0))
-    );
-
-    const decrypted = await window.crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: iv,
-      },
-      key,
-      encrypted
-    );
-
-    const decoder = new TextDecoder();
-    return decoder.decode(decrypted);
   };
 
   return (
@@ -147,7 +60,7 @@ const Body = (props) => {
         style={{ color: props.mode === "dark" ? "white" : "black" }}
       >
         <h3>
-          Text Analyzer - Word counter, Character counter, Remove extra spaces, Encrypt & Decrypt the message
+          Text Analyzer - Word counter, Character counter, Remove extra spaces, Encode & Decode Base64
         </h3>
         <textarea
           value={text}
@@ -156,7 +69,7 @@ const Body = (props) => {
             backgroundColor: props.mode === "dark" ? "rgb(211,211,211)" : "white",
             color: props.mode === "dark" ? "black" : "black",
             border: "1px solid black",
-            width:"80%",
+            width: "80%",
           }}
           rows="5"
           cols="100"
@@ -201,51 +114,17 @@ const Body = (props) => {
         <button
           disabled={text.length === 0}
           className="btn btn-primary my-2"
-          onClick={encrypt}
+          onClick={encodeBase64}
         >
-          Encrypt
+          Encode to Base64
         </button>
         <button
-          disabled={encryptedData.length === 0}
-          className="btn btn-primary mx-3 my-2"
-          onClick={decrypt}> 
-          Decrypt
-        </button>
-      </div>
-
-      <div
-        className="container my-4"
-        style={{ color: props.mode === "dark" ? "white" : "black" }}
-      >
-        <h5>Encrypted Data (Base64):</h5>
-        <textarea
-          value={encryptedData}
-          readOnly
-          rows="4"
-          style={{
-            backgroundColor: props.mode === "dark" ? "rgb(211,211,211)" : "white",
-            color: props.mode === "dark" ? "black" : "black",
-            border: "1px solid black",
-            width:"80%"
-          }}
-          
-        ></textarea>
-         {/* <button
           disabled={text.length === 0}
-          className="btn btn-primary my-2 tect-sm"
-          onClick={copyText}
+          className="btn btn-primary mx-3 my-2"
+          onClick={decodeBase64}
         >
-          Copy Encrpyted msg
-        </button> */}
-
-        <h5>Decrypted Message:
-        <p
-          id="decryptedMessage"
-          style={{ wordWrap: "break-word", maxWidth: "100%" }}
-        >
-          {decryptedMessage}
-      </p></h5>
-        
+          Decode from Base64
+        </button>
       </div>
 
       <div
