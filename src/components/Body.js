@@ -2,21 +2,25 @@ import React, { useState } from "react";
 
 const Body = (props) => {
   const [text, setText] = useState("");
+  const [readability, setReadability] = useState({ readingEase: null, gradeLevel: null });
 
   const upCase = () => {
     let newText = text.toUpperCase();
     setText(newText);
+    handleTextChange(newText);
     props.showAlert("Converted to UpperCase!!", "success");
   };
 
   const lwCase = () => {
     let newText = text.toLowerCase();
     setText(newText);
+    handleTextChange(newText);
     props.showAlert("Converted to LowerCase!!", "success");
   };
 
   const clearText = () => {
     setText("");
+    setReadability({ readingEase: null, gradeLevel: null });
     props.showAlert("Text Cleared!!", "success");
   };
 
@@ -28,25 +32,70 @@ const Body = (props) => {
   const extraSpace = () => {
     let newText = text.split(/[ ]+/).join(" ");
     setText(newText);
+    handleTextChange(newText);
     props.showAlert("Extra Space removed!!", "success");
   };
 
   const change = (event) => {
-    setText(event.target.value);
+    const newText = event.target.value;
+    handleTextChange(newText);
   };
 
-  // Base64 Encoding
+  const handleTextChange = (newText) => {
+    setText(newText);
+    const scores = calculateReadability(newText);
+    setReadability(scores);
+  };
+
+  // Calculate Readability Scores
+  const calculateReadability = (text) => {
+    const sentences = text.split(/[.!?]+/).filter(Boolean).length; // Count sentences
+    const words = text.split(/\s+/).filter(Boolean).length; // Count words
+    const syllables = text.split(/\s+/).reduce((count, word) => {
+      return count + countSyllables(word);
+    }, 0); // Count syllables in each word
+
+    const averageSentenceLength = words / sentences || 0;
+    const averageSyllablesPerWord = syllables / words || 0;
+
+    const readingEase = 206.835 - (1.015 * averageSentenceLength) - (84.6 * averageSyllablesPerWord);
+    const gradeLevel = (0.39 * averageSentenceLength) + (11.8 * averageSyllablesPerWord) - 15.59;
+
+    return {
+      readingEase: readingEase.toFixed(2),
+      gradeLevel: gradeLevel.toFixed(2)
+    };
+  };
+
+  // Helper function to count syllables in a word
+  const countSyllables = (word) => {
+    word = word.toLowerCase();
+    if (word.length <= 3) return 1; // Short words have at least one syllable
+    const syllableCount = word.match(/[aeiouy]{1,2}/g);
+    return syllableCount ? syllableCount.length : 0;
+  };
+
+  // Encode both text and emojis to Base64
   const encodeBase64 = () => {
-    const encoded = btoa(text);
-    setText(encoded);
+    const emojiEncodedText = Array.from(text).map((char) =>
+      /\p{Emoji}/u.test(char) ? `&#${char.codePointAt(0)};` : char
+    ).join("");
+    
+    const base64Encoded = btoa(emojiEncodedText);
+    setText(base64Encoded);
+    handleTextChange(base64Encoded);
     props.showAlert("Text Encoded to Base64!", "success");
   };
 
-  // Base64 Decoding
+  // Decode both text and emojis from Base64
   const decodeBase64 = () => {
     try {
-      const decoded = atob(text);
-      setText(decoded);
+      const base64Decoded = atob(text);
+      const emojiDecodedText = base64Decoded.replace(/&#(\d+);/g, (match, code) =>
+        String.fromCodePoint(code)
+      );
+      setText(emojiDecodedText);
+      handleTextChange(emojiDecodedText);
       props.showAlert("Text Decoded from Base64!", "success");
     } catch (e) {
       props.showAlert("Invalid Base64 string!", "danger");
@@ -151,6 +200,13 @@ const Body = (props) => {
           Minutes to Read
         </p>
         <p>{text.split(".").length - 1} Number of Sentences</p>
+        <h4>Readability Scores</h4>
+        {readability.readingEase && (
+          <p>Reading Ease: {readability.readingEase}</p>
+        )}
+        {readability.gradeLevel && (
+          <p>Grade Level: {readability.gradeLevel}</p>
+        )}
         <h4>Preview Text</h4>
         <p>{text.length > 0 ? text : "Nothing to preview here"}</p>
       </div>
