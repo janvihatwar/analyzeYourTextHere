@@ -3,6 +3,7 @@ import React, { useState } from "react";
 const Body = (props) => {
   const [text, setText] = useState("");
   const [readability, setReadability] = useState({ readingEase: null, gradeLevel: null });
+  const [bookmarkedTexts, setBookmarkedTexts] = useState([]);
 
   const upCase = () => {
     let newText = text.toUpperCase();
@@ -77,11 +78,7 @@ const Body = (props) => {
 
   // Encode both text and emojis to Base64
   const encodeBase64 = () => {
-    const emojiEncodedText = Array.from(text).map((char) =>
-      /\p{Emoji}/u.test(char) ? `&#${char.codePointAt(0)};` : char
-    ).join("");
-    
-    const base64Encoded = btoa(emojiEncodedText);
+    const base64Encoded = btoa(unescape(encodeURIComponent(text)));
     setText(base64Encoded);
     handleTextChange(base64Encoded);
     props.showAlert("Text Encoded to Base64!", "success");
@@ -91,15 +88,34 @@ const Body = (props) => {
   const decodeBase64 = () => {
     try {
       const base64Decoded = atob(text);
-      const emojiDecodedText = base64Decoded.replace(/&#(\d+);/g, (match, code) =>
-        String.fromCodePoint(code)
-      );
+      const emojiDecodedText = decodeURIComponent(escape(base64Decoded));
       setText(emojiDecodedText);
       handleTextChange(emojiDecodedText);
       props.showAlert("Text Decoded from Base64!", "success");
     } catch (e) {
       props.showAlert("Invalid Base64 string!", "danger");
     }
+  };
+
+  // Bookmark text
+  const addBookmark = () => {
+    if (text.trim()) {
+      setBookmarkedTexts((prev) => [...prev, text]);
+      props.showAlert("Text Bookmarked!", "success");
+    }
+  };
+
+  // Use Bookmark
+  const handleBookmarkClick = (bookmark) => {
+    setText(bookmark);
+    handleTextChange(bookmark);
+  };
+
+  // Delete Bookmark
+  const deleteBookmark = (index) => {
+    const newBookmarks = bookmarkedTexts.filter((_, i) => i !== index);
+    setBookmarkedTexts(newBookmarks);
+    props.showAlert("Bookmark Deleted!", "success");
   };
 
   return (
@@ -174,6 +190,13 @@ const Body = (props) => {
         >
           Decode from Base64
         </button>
+        <button
+          disabled={text.length === 0}
+          className="btn btn-primary my-2"
+          onClick={addBookmark}
+        >
+          Bookmark Text
+        </button>
       </div>
 
       <div
@@ -197,18 +220,63 @@ const Body = (props) => {
             text.split(" ").filter((element) => {
               return element.length !== 0;
             }).length}{" "}
-          Minutes to Read
+          Minutes Read
         </p>
-        <p>{text.split(".").length - 1} Number of Sentences</p>
+
         <h4>Readability Scores</h4>
-        {readability.readingEase && (
-          <p>Reading Ease: {readability.readingEase}</p>
-        )}
-        {readability.gradeLevel && (
-          <p>Grade Level: {readability.gradeLevel}</p>
-        )}
+        <p>Reading Ease: {readability.readingEase}</p>
+        <p>Grade Level: {readability.gradeLevel}</p>
+      </div>
+
+      {bookmarkedTexts.length > 0 && (
+        <div
+          className="container my-1"
+          style={{
+            backgroundColor: props.mode === "dark" ? "grey" : "white",
+            color: props.mode === "dark" ? "white" : "black",
+            width: "200px",
+            position: "fixed",
+            right: "10px",
+            top: "10px",
+            border: "1px solid black",
+            borderRadius: "5px",
+            padding: "10px",
+            overflowY: "scroll",
+            maxHeight: "300px"
+          }}
+        >
+          <h4>Bookmarked Texts</h4>
+          <ul>
+            {bookmarkedTexts.map((item, index) => (
+              <li key={index} style={{ marginBottom: "8px" }}>
+                <span
+                  onClick={() => handleBookmarkClick(item)}
+                  style={{ cursor: "pointer", color: "blue" }}
+                >
+                  {item.length > 20 ? `${item.slice(0, 20)}...` : item}
+                </span>
+                <button
+                  onClick={() => deleteBookmark(index)}
+                  style={{ marginLeft: "5px", cursor: "pointer", color: "red" }}
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Preview Text Section */}
+      <div
+        className="container my-1"
+        style={{
+          backgroundColor: props.mode === "dark" ? "grey" : "white",
+          color: props.mode === "dark" ? "white" : "black",
+        }}
+      >
         <h4>Preview Text</h4>
-        <p>{text.length > 0 ? text : "Nothing to preview here"}</p>
+        <p>{text}</p>
       </div>
     </>
   );
