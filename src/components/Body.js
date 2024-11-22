@@ -2,26 +2,22 @@ import React, { useState } from "react";
 
 const Body = (props) => {
   const [text, setText] = useState("");
-  const [readability, setReadability] = useState({ readingEase: null, gradeLevel: null });
   const [bookmarkedTexts, setBookmarkedTexts] = useState([]);
 
   const upCase = () => {
     let newText = text.toUpperCase();
     setText(newText);
-    handleTextChange(newText);
     props.showAlert("Converted to UpperCase!!", "success");
   };
 
   const lwCase = () => {
     let newText = text.toLowerCase();
     setText(newText);
-    handleTextChange(newText);
     props.showAlert("Converted to LowerCase!!", "success");
   };
 
   const clearText = () => {
     setText("");
-    setReadability({ readingEase: null, gradeLevel: null });
     props.showAlert("Text Cleared!!", "success");
   };
 
@@ -33,71 +29,30 @@ const Body = (props) => {
   const extraSpace = () => {
     let newText = text.split(/[ ]+/).join(" ");
     setText(newText);
-    handleTextChange(newText);
     props.showAlert("Extra Space removed!!", "success");
   };
 
   const change = (event) => {
-    const newText = event.target.value;
-    handleTextChange(newText);
+    setText(event.target.value);
   };
 
-  const handleTextChange = (newText) => {
-    setText(newText);
-    const scores = calculateReadability(newText);
-    setReadability(scores);
-  };
-
-  // Calculate Readability Scores
-  const calculateReadability = (text) => {
-    const sentences = text.split(/[.!?]+/).filter(Boolean).length; // Count sentences
-    const words = text.split(/\s+/).filter(Boolean).length; // Count words
-    const syllables = text.split(/\s+/).reduce((count, word) => {
-      return count + countSyllables(word);
-    }, 0); // Count syllables in each word
-
-    const averageSentenceLength = words / sentences || 0;
-    const averageSyllablesPerWord = syllables / words || 0;
-
-    const readingEase = 206.835 - (1.015 * averageSentenceLength) - (84.6 * averageSyllablesPerWord);
-    const gradeLevel = (0.39 * averageSentenceLength) + (11.8 * averageSyllablesPerWord) - 15.59;
-
-    return {
-      readingEase: readingEase.toFixed(2),
-      gradeLevel: gradeLevel.toFixed(2)
-    };
-  };
-
-  // Helper function to count syllables in a word
-  const countSyllables = (word) => {
-    word = word.toLowerCase();
-    if (word.length <= 3) return 1; // Short words have at least one syllable
-    const syllableCount = word.match(/[aeiouy]{1,2}/g);
-    return syllableCount ? syllableCount.length : 0;
-  };
-
-  // Encode both text and emojis to Base64
   const encodeBase64 = () => {
     const base64Encoded = btoa(unescape(encodeURIComponent(text)));
     setText(base64Encoded);
-    handleTextChange(base64Encoded);
     props.showAlert("Text Encoded to Base64!", "success");
   };
 
-  // Decode both text and emojis from Base64
   const decodeBase64 = () => {
     try {
       const base64Decoded = atob(text);
       const emojiDecodedText = decodeURIComponent(escape(base64Decoded));
       setText(emojiDecodedText);
-      handleTextChange(emojiDecodedText);
       props.showAlert("Text Decoded from Base64!", "success");
     } catch (e) {
       props.showAlert("Invalid Base64 string!", "danger");
     }
   };
 
-  // Bookmark text
   const addBookmark = () => {
     if (text.trim()) {
       setBookmarkedTexts((prev) => [...prev, text]);
@@ -105,17 +60,29 @@ const Body = (props) => {
     }
   };
 
-  // Use Bookmark
   const handleBookmarkClick = (bookmark) => {
     setText(bookmark);
-    handleTextChange(bookmark);
   };
 
-  // Delete Bookmark
   const deleteBookmark = (index) => {
     const newBookmarks = bookmarkedTexts.filter((_, i) => i !== index);
     setBookmarkedTexts(newBookmarks);
     props.showAlert("Bookmark Deleted!", "success");
+  };
+
+  // Find the longest words in the text
+  const findLongestWords = (text) => {
+    const words = text.split(/\s+/).filter(Boolean); // Split text into words and filter out empty strings
+    const maxLength = Math.max(...words.map((word) => word.length)); // Find the maximum length
+    return words.filter((word) => word.length === maxLength); // Return all words with the max length
+  };
+
+  // Calculate the number of sentences in the text
+  const countSentences = (text) => {
+    const sentences = text
+      .split(/[.!?]/) // Split the text at '.', '!', or '?'
+      .filter((sentence) => sentence.trim().length > 0); // Filter out empty sentences
+    return sentences.length;
   };
 
   return (
@@ -216,16 +183,13 @@ const Body = (props) => {
           Words And {text.length} Characters
         </p>
         <p>
-          {0.008 *
-            text.split(" ").filter((element) => {
-              return element.length !== 0;
-            }).length}{" "}
-          Minutes Read
+          Longest Word(s):{" "}
+          {text.length > 0 ? findLongestWords(text).join(", ") : "N/A"} (
+          {text.length > 0 ? findLongestWords(text)[0].length : 0} characters)
         </p>
-
-        <h4>Readability Scores</h4>
-        <p>Reading Ease: {readability.readingEase}</p>
-        <p>Grade Level: {readability.gradeLevel}</p>
+        <p>
+          Number of Sentences: {text.length > 0 ? countSentences(text) : 0}
+        </p>
       </div>
 
       {bookmarkedTexts.length > 0 && (
@@ -242,7 +206,7 @@ const Body = (props) => {
             borderRadius: "5px",
             padding: "10px",
             overflowY: "scroll",
-            maxHeight: "300px"
+            maxHeight: "300px",
           }}
         >
           <h4>Bookmarked Texts</h4>
@@ -267,7 +231,6 @@ const Body = (props) => {
         </div>
       )}
 
-      {/* Preview Text Section */}
       <div
         className="container my-1"
         style={{
