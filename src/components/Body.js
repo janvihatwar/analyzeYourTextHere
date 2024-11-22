@@ -72,10 +72,13 @@ const Body = (props) => {
 
   // Find the longest words in the text
   const findLongestWords = (text) => {
-    const words = text.split(/\s+/).filter(Boolean); // Split text into words and filter out empty strings
-    const maxLength = Math.max(...words.map((word) => word.length)); // Find the maximum length
+    const words = text
+      .split(/\s+/) // Split text into words
+      .filter((word) => /^[a-zA-Z0-9]+$/.test(word)); // Filter only alphanumeric words
+    const maxLength = Math.max(...words.map((word) => word.length), 0); // Find the maximum length
     return words.filter((word) => word.length === maxLength); // Return all words with the max length
   };
+  
 
   // Calculate the number of sentences in the text
   const countSentences = (text) => {
@@ -183,10 +186,16 @@ const Body = (props) => {
           Words And {text.length} Characters
         </p>
         <p>
-          Longest Word(s):{" "}
-          {text.length > 0 ? findLongestWords(text).join(", ") : "N/A"} (
-          {text.length > 0 ? findLongestWords(text)[0].length : 0} characters)
-        </p>
+  Longest Word(s):{" "}
+  {text.length > 0 && findLongestWords(text).length > 0
+    ? findLongestWords(text).join(", ")
+    : "N/A"}{" "}
+  (
+  {text.length > 0 && findLongestWords(text).length > 0
+    ? findLongestWords(text)[0].length
+    : 0} characters)
+</p>
+
         <p>
           Number of Sentences: {text.length > 0 ? countSentences(text) : 0}
         </p>
