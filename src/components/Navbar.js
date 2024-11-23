@@ -6,7 +6,7 @@ const Navbar = (props) => {
       <nav className={`navbar navbar-expand-lg navbar-${props.mode} bg-${props.mode}`}>
         <div className="container-fluid">
           {/* Dynamic Title */}
-          <a className="navbar-brand" href="/">
+          <a className="navbar-brand" >
             {props.title}
           </a>
 
@@ -26,7 +26,7 @@ const Navbar = (props) => {
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
                 {/* Replace "#" with a valid route */}
-                <a className="nav-link active" aria-current="page" href="/">
+                <a className="nav-link active" aria-current="page" >
                   Home
                 </a>
               </li>
